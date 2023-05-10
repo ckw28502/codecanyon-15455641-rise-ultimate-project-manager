@@ -371,7 +371,6 @@ class Leaves extends Security_Controller {
 
     //update leave status
     function update_status() {
-
         $this->validate_submitted_data(array(
             "id" => "required|numeric",
             "status" => "required"
