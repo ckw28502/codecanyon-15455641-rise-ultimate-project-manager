@@ -27,10 +27,14 @@
                 $("[data-bs-target='#overtime-confirmed']").trigger("click");
             }
         }, 210);
-        // $.ajax({
-        //     type: "post",
-        //     url: '<?php echo_uri("overtime/confirmed_list_data") ?>',
-        //     success:function (data) { console.log(JSON.parse(data)); }
-        // })
+        $.ajax({
+            type: "post",
+            data:{
+                id:1,
+                status:"Waiting Confirmation"
+            },
+            url: '<?php echo_uri("overtime/update_status") ?>',
+            success:function (data) { console.log(JSON.parse(data)); }
+        })
     });
 </script>

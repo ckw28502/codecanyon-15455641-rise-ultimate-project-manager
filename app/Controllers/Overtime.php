@@ -200,15 +200,15 @@ class Overtime extends Security_Controller {
     }
 
     // list of pending leave application. prepared for datatable
-    function pending_approval_list_data() {
-        $options = array("status" => "pending", "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
-        $list_data = $this->Leave_applications_model->get_list($options)->getResult();
+    function waiting_acknowledge_list_data() {
+        $options = array("status" => "Waiting Confirmation", "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
+        $list_data = $this->Overtime_model->get_list($options)->getResult();
 
         $result = array();
         foreach ($list_data as $data) {
             $result[] = $this->_make_row($data);
         }
-        echo json_encode(array("data" => $$list_data));
+        echo json_encode(array("data" => $result));
     }
 
     // list of all confirmed application 
@@ -222,7 +222,7 @@ class Overtime extends Security_Controller {
         // $end_date = $this->request->getPost('end_date');
         $employee_id = $this->request->getPost('employee_id');
 
-        $options = array("employee_id"=>$employee_id, "login_user_id" => $this->login_user->id, "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
+        $options = array("employee_id"=>$employee_id,"not_status"=>"Waiting Confirmation", "login_user_id" => $this->login_user->id, "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
         $list_data = $this->Overtime_model->get_list($options)->getResult();
         $result = array();
         foreach ($list_data as $data) {
@@ -259,7 +259,7 @@ class Overtime extends Security_Controller {
     private function _make_row($data) {
         $meta_info = $this->_prepare_overtime_info($data);
         $option_icon = "info";
-        if ($data->status_overtime === "pending") {
+        if ($data->status_overtime === "Waiting Confirmation") {
             $option_icon = "cloud-lightning";
         }
 
@@ -274,7 +274,7 @@ class Overtime extends Security_Controller {
         }
 
         if ($this->can_delete_leave_application() && $can_manage_application) {
-            $actions .= js_anchor("<i data-feather='x' class='icon-16'></i>", array('title' => app_lang('delete'), "class" => "delete", "data-id" => $data->uuid, "data-action-url" => get_uri("leaves/delete"), "data-action" => "delete-confirmation"));
+            $actions .= js_anchor("<i data-feather='x' class='icon-16'></i>", array('title' => app_lang('delete'), "class" => "delete", "data-id" => $data->uuid, "data-action-url" => get_uri("overtime/delete"), "data-action" => "delete-confirmation"));
         }
 
         return array(
@@ -345,7 +345,7 @@ class Overtime extends Security_Controller {
         ));
 
         $applicaiton_id = $this->request->getPost('id');
-        $info = $this->Leave_applications_model->get_details_info($applicaiton_id);
+        $info = $this->Overtime_model->get_details_info($applicaiton_id);
         if (!$info) {
             show_404();
         }
@@ -355,70 +355,72 @@ class Overtime extends Security_Controller {
         $can_manage_application = false;
         if ($this->access_type === "all") {
             $can_manage_application = true;
-        } else if (array_search($info->applicant_id, $this->allowed_members) && $info->applicant_id !== $this->login_user->id) {
+        } else if (array_search($info->employee_id, $this->allowed_members) && $info->employee_id !== $this->login_user->id) {
             $can_manage_application = true;
         }
         $view_data['show_approve_reject'] = $can_manage_application;
 
         //has permission to manage the appliation? or is it own application?
-        if (!$can_manage_application && $info->applicant_id !== $this->login_user->id) {
+        if (!$can_manage_application && $info->employee_id !== $this->login_user->id) {
             app_redirect("forbidden");
         }
 
-        $view_data['leave_info'] = $this->_prepare_overtime_info($info);
-        return $this->template->view("leaves/application_details", $view_data);
+        $view_data['overtime_info'] = $this->_prepare_overtime_info($info);
+        return $this->template->view("overtime/application_details", $view_data);
     }
 
     //update leave status
     function update_status() {
 
-        $this->validate_submitted_data(array(
-            "id" => "required|numeric",
-            "status" => "required"
-        ));
-
-        $applicaiton_id = $this->request->getPost('id');
-        $status = $this->request->getPost('status');
-        $now = get_current_utc_time();
-
-        $leave_data = array(
-            "checked_by" => $this->login_user->id,
-            "checked_at" => $now,
-            "status" => $status
-        );
-
-        //only allow to updte the status = accept or reject for admin or specefic user
-        //otherwise user can cancel only his/her own application
-        $applicatoin_info = $this->Leave_applications_model->get_one($applicaiton_id);
-
-        if ($status === "approved" || $status === "rejected") {
-            $this->access_only_allowed_members($applicatoin_info->applicant_id);
-        } else if ($status === "canceled" && $applicatoin_info->applicant_id != $this->login_user->id) {
-            //any user can't cancel other user's leave application
-            app_redirect("forbidden");
-        }
-
-        //user can update only the applications where status = pending
-        if ($applicatoin_info->status != "pending" || !($status === "approved" || $status === "rejected" || $status === "canceled")) {
-            app_redirect("forbidden");
-        }
-
-        $save_id = $this->Leave_applications_model->ci_save($leave_data, $applicaiton_id);
-        if ($save_id) {
-
-            $notification_options = array("leave_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->applicant_id);
-
-            if ($status == "approved") {
-                log_notification("leave_approved", $notification_options);
-            } else if ($status == "rejected") {
-                log_notification("leave_rejected", $notification_options);
-            } else if ($status == "canceled") {
-                log_notification("leave_canceled", $notification_options);
+        try {
+            $this->validate_submitted_data(array(
+                "id" => "required|numeric",
+                "status" => "required"
+            ));
+    
+            $applicaiton_id = $this->request->getPost('id');
+            $status = $this->request->getPost('status');
+    
+            $leave_data = array(
+                "ovt_status" => $status
+            );
+    
+            //only allow to updte the status = accept or reject for admin or specefic user
+            //otherwise user can cancel only his/her own application
+            $applicatoin_info = $this->Overtime_model->get_one($applicaiton_id);
+    
+            if ($status === "approved" || $status === "rejected") {
+                $this->access_only_allowed_members($applicatoin_info->applicant_id);
+            } else if ($status === "canceled" && $applicatoin_info->applicant_id != $this->login_user->id) {
+                //any user can't cancel other user's leave application
+                app_redirect("forbidden");
             }
-
-            echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
-        } else {
-            echo json_encode(array("success" => false, 'message' => app_lang('error_occurred')));
+    
+            //user can update only the applications where status = pending
+            if ($applicatoin_info->status != "pending" || !($status === "approved" || $status === "rejected" || $status === "canceled")) {
+                app_redirect("forbidden");
+            }
+    
+            $save_id = $this->Leave_applications_model->ci_save($leave_data, $applicaiton_id);
+            if ($save_id) {
+    
+                $notification_options = array("leave_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->applicant_id);
+    
+                if ($status == "approved") {
+                    log_notification("leave_approved", $notification_options);
+                } else if ($status == "rejected") {
+                    log_notification("leave_rejected", $notification_options);
+                } else if ($status == "canceled") {
+                    log_notification("leave_canceled", $notification_options);
+                }
+    
+                echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
+            } else {
+                echo json_encode(array("success" => false, 'message' => app_lang('error_occurred')));
+            }
+        } catch (\Exception $th) {
+            //throw $th;
+            return json_encode(array("error"),$th->getMessage());
         }
     }
 
@@ -436,10 +438,12 @@ class Overtime extends Security_Controller {
             app_redirect("forbidden");
         }
 
-        $applicatoin_info = $this->Leave_applications_model->get_one($id);
-        $this->access_only_allowed_members($applicatoin_info->applicant_id);
 
-        if ($this->Leave_applications_model->delete($id)) {
+        // $applicatoin_info = $this->Leave_applications_model->get_one($id); 
+        // $this->access_only_allowed_members($applicatoin_info->applicant_id); 
+        // echo json_encode(array("success" => true, 'message' => app_lang('tes')));
+
+        if ($this->Overtime_model->delete($id)) {
             echo json_encode(array("success" => true, 'message' => app_lang('record_deleted')));
         } else {
             echo json_encode(array("success" => false, 'message' => app_lang('record_cannot_be_deleted')));
