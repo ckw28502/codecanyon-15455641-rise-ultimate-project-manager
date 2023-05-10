@@ -4,12 +4,12 @@
             <div class="d-flex bg-white">
                 <div class="flex-shrink-0">
                     <span class="avatar avatar-sm">
-                        <img src="<?php echo get_avatar($leave_info->applicant_avatar); ?>" alt="..." />
+                        <img src="<?php echo get_avatar($overtime_info->applicant_avatar); ?>" alt="..." />
                     </span>
                 </div>
                 <div class="ps-2 w-100 pt5">
                     <div class="m0">
-                        <?php echo $leave_info->applicant_name; ?>
+                        <?php echo $overtime_info->applicant_name; ?>
                     </div>
                     <p><span class='badge bg-primary'><?php echo $leave_info->job_title; ?></span> </p>
                 </div>
