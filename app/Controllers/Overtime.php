@@ -274,7 +274,7 @@ class Overtime extends Security_Controller {
         }
 
         if ($this->can_delete_leave_application() && $can_manage_application) {
-            $actions .= js_anchor("<i data-feather='x' class='icon-16'></i>", array('title' => app_lang('delete'), "class" => "delete", "data-id" => $data->uuid, "data-action-url" => get_uri("leaves/delete"), "data-action" => "delete-confirmation"));
+            $actions .= js_anchor("<i data-feather='x' class='icon-16'></i>", array('title' => app_lang('delete'), "class" => "delete", "data-id" => $data->uuid, "data-action-url" => get_uri("overtime/delete"), "data-action" => "delete-confirmation"));
         }
 
         return array(
@@ -436,10 +436,10 @@ class Overtime extends Security_Controller {
             app_redirect("forbidden");
         }
 
-        $applicatoin_info = $this->Leave_applications_model->get_one($id);
-        $this->access_only_allowed_members($applicatoin_info->applicant_id);
+        // $applicatoin_info = $this->Leave_applications_model->get_one($id);
+        // $this->access_only_allowed_members($applicatoin_info->applicant_id);
 
-        if ($this->Leave_applications_model->delete($id)) {
+        if ($this->Overtime_model->delete($id)) {
             echo json_encode(array("success" => true, 'message' => app_lang('record_deleted')));
         } else {
             echo json_encode(array("success" => false, 'message' => app_lang('record_cannot_be_deleted')));
