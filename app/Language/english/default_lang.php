@@ -218,6 +218,18 @@ $lang["status_overtime"]="Status_Overtime";
 $lang["tipe_task_overtime"]="Tipe_Task_Overtime";
 
 
+/* overtimetype */
+$lang["new_feature"]="New Feature";
+$lang["bug_fixing"]="Bug Fixing";
+$lang["testing"]="Testing";
+$lang["deployment"]="Deployment";
+$lang["meeting"]="Meeting";
+$lang["waiting_confirmation"]="Waiting Confirmation";
+$lang["acknowledge"]="Acknowledge";
+$lang["rejected"]="Rejected";
+$lang["approved"]="Approved";
+$lang["revision"]="Revision";
+
 /* events */
 $lang["add_event"] = "Add event";
 $lang["edit_event"] = "Edit event";
