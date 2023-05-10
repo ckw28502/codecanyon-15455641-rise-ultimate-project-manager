@@ -214,8 +214,8 @@ $lang["overtimes"]="Overtime";
 $lang["create_overtime"]="Create Overtime";
 $lang["waiting_acknowledge"]="Waiting Acknowledge";
 $lang["uuid"]="uuid";
-$lang["status_overtime"]="Status_Overtime";
-$lang["tipe_task_overtime"]="Tipe_Task_Overtime";
+$lang["status_overtime"]="Status Overtime";
+$lang["tipe_task_overtime"]="Tipe Task Overtime";
 
 
 /* overtimetype */

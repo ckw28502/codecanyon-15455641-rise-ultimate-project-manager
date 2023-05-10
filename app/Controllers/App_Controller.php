@@ -80,6 +80,7 @@ class App_Controller extends Controller {
     public $Proposal_items_model;
     public $Checklist_template_model;
     public $Checklist_groups_model;
+    public $Overtime_model;
 
     public function __construct() {
         //main template to make frame of this app
@@ -182,7 +183,8 @@ class App_Controller extends Controller {
             'Checklist_template_model',
             'Checklist_groups_model',
             'Subscriptions_model',
-            'Subscription_items_model'
+            'Subscription_items_model',
+            'Overtime_model'
         );
     }
 

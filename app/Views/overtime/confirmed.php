@@ -1,12 +1,13 @@
 <div class="table-responsive">
-    <table id="pending-approval-table" class="display" cellspacing="0" width="100%">            
+    <table id="confirmed-table" class="display" cellspacing="0" width="100%">            
     </table>
 </div>
 
 <script type="text/javascript">
     $(document).ready(function () {
-        $("#pending-approval-table").appTable({
-            source: '<?php echo_uri("leaves/pending_approval_list_data") ?>',
+        $("#confirmed-table").appTable({
+            source: '<?php echo_uri("overtime/confirmed_list_data") ?>',
+            dateRangeType: "monthly",
             columns: [
                 {title: '<?php echo app_lang("uuid") ?>', "class": "w20p"},
                 {title: '<?php echo app_lang("username") ?>'},

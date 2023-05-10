@@ -1,12 +1,12 @@
 <div class="table-responsive">
-    <table id="leave-summary-table" class="display" cellspacing="0"width="100%">
+    <table id="overtime-summary-table" class="display" cellspacing="0"width="100%">
     </table>
 </div>
 
 <script type="text/javascript">
 
     $(document).ready(function () {
-        $("#leave-summary-table").appTable({
+        $("#overtime-summary-table").appTable({
             source: '<?php echo_uri("leaves/summary_list_data") ?>',
             filterDropdown: [
                 {name: "leave_type_id", class: "w200", options: <?php echo $leave_types_dropdown; ?>},
