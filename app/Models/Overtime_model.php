@@ -11,20 +11,19 @@ class Overtime_model extends Crud_model {
         parent::__construct($this->table);
     }
 
-    function get_details_info($id = 0) {
-        $leave_applications_table = $this->db->prefixTable('leave_applications');
+    function get_details_info($uuid = 0) {
+        $overtimes_table = $this->db->prefixTable('overtime');
         $users_table = $this->db->prefixTable('users');
-        $leave_types_table = $this->db->prefixTable('leave_types');
+        $ovt_types_table = $this->db->prefixTable('ovt_type');
 
-        $sql = "SELECT $leave_applications_table.*, 
-                CONCAT(applicant_table.first_name, ' ',applicant_table.last_name) AS applicant_name, applicant_table.image as applicant_avatar, applicant_table.job_title,
-                CONCAT(checker_table.first_name, ' ',checker_table.last_name) AS checker_name, checker_table.image as checker_avatar,
-                $leave_types_table.title as leave_type_title,   $leave_types_table.color as leave_type_color
-            FROM $leave_applications_table
-            LEFT JOIN $users_table AS applicant_table ON applicant_table.id= $leave_applications_table.applicant_id
-            LEFT JOIN $users_table AS checker_table ON checker_table.id= $leave_applications_table.checked_by
-            LEFT JOIN $leave_types_table ON $leave_types_table.id= $leave_applications_table.leave_type_id        
-            WHERE $leave_applications_table.deleted=0 AND $leave_applications_table.id=$id";
+        $sql = "SELECT $overtimes_table.*, 
+                CONCAT($users_table.first_name, ' ',$users_table.last_name) AS username, $users_table.image as employee_avatar, $users_table.job_title,
+                t.type_name as tipe_task_overtime, s.type_name as status_overtime
+            FROM $overtimes_table
+            LEFT JOIN $users_table ON $users_table.id= $overtimes_table.employee_id
+            LEFT JOIN $ovt_types_table t ON t.id= $overtimes_table.ovt_type_id        
+            LEFT JOIN $ovt_types_table s ON s.id= $overtimes_table.ovt_status        
+            WHERE $overtimes_table.deleted_at IS NULL AND $overtimes_table.uuid=$uuid";
         return $this->db->query($sql)->getRow();
     }
 
@@ -41,12 +40,12 @@ class Overtime_model extends Crud_model {
 
         $type = $this->_get_clean_value($options, "type");
         if ($type) {
-            $where .= " AND $ovt_type_table.type_name='$type'";
+            $where .= " AND t.type_name='$type'";
         }
 
         $status = $this->_get_clean_value($options, "status");
         if ($status) {
-            $where .= " AND $ovt_status_table.ovt_status='$status'";
+            $where .= " AND s.type_name='$status'";
         }
 
         $start_date = $this->_get_clean_value($options, "start_date");
@@ -66,6 +65,10 @@ class Overtime_model extends Crud_model {
             $where .=" AND $ovt_type_table.type_name=$type";
         }
 
+        $not_status=$this->_get_clean_value($options,"not_status");
+        if ($not_status) {
+            $where .=" AND s.type_name!='$not_status'";
+        }
         $access_type = $this->_get_clean_value($options, "access_type");
 
         if (!$uuid && $access_type !== "all") {
