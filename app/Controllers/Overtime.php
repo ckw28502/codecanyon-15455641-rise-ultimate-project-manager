@@ -436,9 +436,10 @@ class Overtime extends Security_Controller {
             app_redirect("forbidden");
         }
 
-        // $applicatoin_info = $this->Leave_applications_model->get_one($id);
-        // $this->access_only_allowed_members($applicatoin_info->applicant_id);
-
+        // $applicatoin_info = $this->Leave_applications_model->get_one($id); 
+        // $this->access_only_allowed_members($applicatoin_info->applicant_id); 
+        // echo json_encode(array("success" => true, 'message' => app_lang('tes')));
+        
         if ($this->Overtime_model->delete($id)) {
             echo json_encode(array("success" => true, 'message' => app_lang('record_deleted')));
         } else {
