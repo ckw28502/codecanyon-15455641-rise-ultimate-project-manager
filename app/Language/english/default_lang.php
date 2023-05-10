@@ -213,7 +213,10 @@ $lang["my_leave"] = "My leave";
 $lang["overtimes"]="Overtime";
 $lang["create_overtime"]="Create Overtime";
 $lang["waiting_acknowledge"]="Waiting Acknowledge";
-$lang["confirmed"]="Confirmed";
+$lang["uuid"]="uuid";
+$lang["status_overtime"]="Status_Overtime";
+$lang["tipe_task_overtime"]="Tipe_Task_Overtime";
+
 
 /* events */
 $lang["add_event"] = "Add event";
