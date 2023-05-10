@@ -17,10 +17,11 @@
     <div class="sidebar-scroll">
         <ul id="sidebar-menu" class="sidebar-menu">
             <?php
+            
             if (!$is_preview) {
                 $sidebar_menu = get_active_menu($sidebar_menu);
             }
-
+            
             foreach ($sidebar_menu as $main_menu) {
                 $main_menu_name = get_array_value($main_menu, "name");
                 if (!$main_menu_name) {

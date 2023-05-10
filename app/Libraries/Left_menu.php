@@ -390,8 +390,13 @@ class Left_menu {
 
             if (get_setting("module_announcement") == "1") {
                 $team_submenu["announcements"] = array("name" => "announcements", "url" => "announcements", "class" => "bell");
+
             }
 
+            if (get_setting("module_announcement") == "1") {
+                $team_submenu["overtime"] = array("name" => "overtimes", "url" => "overtime", "class" => "bell");
+
+            }
 
             if (count($team_submenu)) {
                 $sidebar_menu["team"] = array("name" => "team", "url" => "team_members", "class" => "users", "submenu" => $team_submenu);
@@ -549,6 +554,10 @@ class Left_menu {
 
             if (get_setting("module_announcement") == "1" && !in_array("announcements", $hidden_menu)) {
                 $sidebar_menu[] = array("name" => "announcements", "url" => "announcements", "class" => "bell");
+            }
+            
+            if (get_setting("module_announcement") == "1" && !in_array("overtimes", $hidden_menu)) {
+                $sidebar_menu[] = array("name" => "overtimes", "url" => "overtime", "class" => "bell");
             }
 
             $sidebar_menu[] = array("name" => "users", "url" => "clients/users", "class" => "users");
