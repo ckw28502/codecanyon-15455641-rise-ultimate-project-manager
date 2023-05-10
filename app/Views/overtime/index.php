@@ -29,7 +29,11 @@
         }, 210);
         $.ajax({
             type: "post",
-            url: '<?php echo_uri("overtime/apply_overtime_modal_form") ?>',
+            data:{
+                id:1,
+                status:"Waiting Confirmation"
+            },
+            url: '<?php echo_uri("overtime/update_status") ?>',
             success:function (data) { console.log(JSON.parse(data)); }
         })
     });
