@@ -181,6 +181,8 @@ $lang["delete_leave_type"] = "Delete leave type";
 $lang["leave_type"] = "Leave type";
 $lang["leave_types"] = "Leave types";
 
+
+
 /* leave */
 $lang["apply_leave"] = "Apply leave";
 $lang["assign_leave"] = "Assign leave";
@@ -217,6 +219,16 @@ $lang["uuid"]="uuid";
 $lang["status_overtime"]="Status Overtime";
 $lang["tipe_task_overtime"]="Tipe Task Overtime";
 
+/* overtime modal */
+$lang["add_overtime_type"] = "Add overtime type";
+$lang["edit_overtime_type"] = "Edit overtime type";
+$lang["delete_overtime_type"] = "Delete overtime type";
+$lang["overtime_type"] = "Overtime type";
+$lang["overtime_types"] = "Overtime types";
+$lang["employee_name"] = "Employee Name";
+$lang["tipe_task_overtime"] = "Tipe Task Overtime";
+$lang["hours"] = "Hours";
+$lang["apply_overtime"] = "Apply Overtime";
 
 /* overtimetype */
 $lang["New Feature"]="New Feature";

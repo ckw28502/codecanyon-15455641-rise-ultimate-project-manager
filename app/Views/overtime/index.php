@@ -3,7 +3,7 @@
         <div class="page-title clearfix overtime-page-title">
             <h1><?php echo app_lang('overtimes'); ?></h1>
             <div class="title-button-group">
-                <?php echo modal_anchor(get_uri("overtime/apply_leave_modal_form"), "<i data-feather='plus-circle' class='icon-16'></i> " . app_lang('create_overtime'), array("class" => "btn btn-default", "title" => app_lang('apply_leave'))); ?>
+                <?php echo modal_anchor(get_uri("overtime/apply_overtime_modal_form"), "<i data-feather='plus-circle' class='icon-16'></i> " . app_lang('create_overtime'), array("class" => "btn btn-default", "title" => app_lang('apply_leave'))); ?>
             </div>
         </div>
         <ul id="overtime-tabs" data-bs-toggle="ajax-tab" class="nav nav-tabs bg-white inner" role="tablist">
@@ -27,10 +27,10 @@
                 $("[data-bs-target='#overtime-confirmed']").trigger("click");
             }
         }, 210);
-        // $.ajax({
-        //     type: "post",
-        //     url: '<?php echo_uri("overtime/confirmed_list_data") ?>',
-        //     success:function (data) { console.log(JSON.parse(data)); }
-        // })
+        $.ajax({
+            type: "post",
+            url: '<?php echo_uri("overtime/apply_overtime_modal_form") ?>',
+            success:function (data) { console.log(JSON.parse(data)); }
+        })
     });
 </script>

@@ -61,10 +61,25 @@ class Overtime extends Security_Controller {
     }
 
     //all team members can apply for leave
-    function apply_leave_modal_form() {
-        $view_data['leave_types_dropdown'] = array("" => "-") + $this->Leave_types_model->get_dropdown_list(array("title"), "id", array("status" => "active"));
-        $view_data['form_type'] = "apply_leave";
-        return $this->template->view('leaves/modal_form', $view_data);
+    function apply_overtime_modal_form() {
+
+        // $view_data['leave_types_dropdown'] = array("" => "-") + $this->Ovt_types_model->get_dropdown_list(array("title"), "id", array("status" => "active"));
+        // $view_data['employee_dropdown'] = array("" => "-") + $this->Users_model->get_dropdown_list(array("first_name", "last_name"), "id");
+        $view_data['employee_dropdown'] = array("" => "-") + $this->Users_model->get_dropdown_list(array("first_name", "last_name"), "id");
+        
+
+        // $view_data['employee_dropdown'] = array("" => "-") + $this->Overtime_model->get_details_info(1);
+       
+        // try {
+        //     $view_data['tipe_task_overtime_dropdown'] = array("" => "-") + $this->Ovt_type_model->get_type();
+
+        // } catch (Exception $th) {
+        //     return json_encode(array("error",$th->getMessage()));
+        // }
+
+
+        $view_data['form_type'] = "apply_overtime";
+        return $this->template->view('overtime/modal_form', $view_data);
     }
 
     // save: assign leave 
