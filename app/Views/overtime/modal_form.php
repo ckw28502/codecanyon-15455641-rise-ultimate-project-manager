@@ -25,7 +25,7 @@
 
             <div class="form-group">
                 <div class="row">
-                    <label for="leave_type" class=" col-md-3"><?php echo app_lang('leave_type'); ?></label>
+                    <label for="employee" class=" col-md-3"><?php echo app_lang('employee'); ?></label>
                     <div class=" col-md-9">
                         <?php
                         echo form_dropdown("leave_type_id", $leave_types_dropdown, "", "class='select2 validate-hidden' id='leave_type_id' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
@@ -36,164 +36,27 @@
             <div class=" form-group">
                 <div class="row">
                     <label for="duration" class=" col-md-3"><?php echo app_lang('duration'); ?></label>
-                    <div class="col-md-9">
-
-                        <?php
-                        echo form_radio(array(
-                            "id" => "duration_single_day",
-                            "class" => "duration form-check-input",
-                            "name" => "duration",
-                                ), "single_day", true);
-                        ?>
-                        <label for="duration_single_day" class="mr15" ><?php echo app_lang('single_day'); ?></label>
-
-                        <?php
-                        echo form_radio(array(
-                            "id" => "duration_mulitple_days",
-                            "class" => "duration form-check-input",
-                            "name" => "duration",
-                                ), "multiple_days", false);
-                        ?>
-                        <label for="duration_mulitple_days" class="mr15" ><?php echo app_lang('mulitple_days'); ?></label>
-
-                        <?php
-                        echo form_radio(array(
-                            "id" => "duration_hours",
-                            "class" => "duration form-check-input",
-                            "name" => "duration",
-                                ), "hours", false);
-                        ?>
-                        <label for="duration_hours" ><?php echo app_lang('hours'); ?></label>
+                    <div class=" col-md-9">
+                    <input type="number" id="duration" name="duration" min="1" max="999">
                     </div>
+                    
+                    </form>
                 </div>
             </div>
-
-            <div id="single_day_section"  class="form-group date_section">
-                <div class="row">
-                    <label id="date_label" for="single_date" class=" col-md-3"><?php echo app_lang('date'); ?></label>
-                    <div class="col-md-9">
-                        <?php
-                        echo form_input(array(
-                            "id" => "single_date",
-                            "name" => "single_date",
-                            "class" => "form-control",
-                            "placeholder" => app_lang('date'),
-                            "autocomplete" => "off",
-                            "data-rule-required" => true,
-                            "data-msg-required" => app_lang("field_required"),
-                        ));
-                        ?>
-                    </div>
-                </div>
-            </div>
-            <div id="multiple_days_section" class="hide date_section">
-                <div class="form-group">
-                    <div class="row">
-                        <label for="start_date" class=" col-md-3"><?php echo app_lang('start_date'); ?></label>
-                        <div class=" col-md-9">
-                            <?php
-                            echo form_input(array(
-                                "id" => "start_date",
-                                "name" => "start_date",
-                                "class" => "form-control",
-                                "placeholder" => app_lang('start_date'),
-                                "autocomplete" => "off",
-                                "data-rule-required" => true,
-                                "data-msg-required" => app_lang("field_required")
-                            ));
-                            ?>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="row">
-                        <label for="end_date" class=" col-md-3"><?php echo app_lang('end_date'); ?></label>
-                        <div class=" col-md-9">
-                            <?php
-                            echo form_input(array(
-                                "id" => "end_date",
-                                "name" => "end_date",
-                                "class" => "form-control",
-                                "placeholder" => app_lang('end_date'),
-                                "autocomplete" => "off",
-                                "data-rule-required" => true,
-                                "data-msg-required" => app_lang("field_required"),
-                                "data-rule-greaterThanOrEqual" => "#start_date",
-                                "data-msg-greaterThanOrEqual" => app_lang("end_date_must_be_equal_or_greater_than_start_date"),
-                                "data-rule-mustBeSameYear" => "#start_date"
-                            ));
-                            ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="total_days_section" class="hide date_section">
-                <div class="form-group">
-                    <div class="row">
-                        <label for="total_days" class="col-md-3"><?php echo app_lang('total_days'); ?></label>
-                        <div class="col-md-9 total-days">
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="hours_section" class="hide date_section">
-                <div class="clearfix">
-                    <div class="row">
-                        <label for="hour_date" class=" col-md-3"><?php echo app_lang('date'); ?></label>
-                        <div class="col-md-4 form-group">
-                            <?php
-                            echo form_input(array(
-                                "id" => "hour_date",
-                                "name" => "hour_date",
-                                "class" => "form-control",
-                                "placeholder" => app_lang('date'),
-                                "autocomplete" => "off",
-                                "data-rule-required" => true,
-                                "data-msg-required" => app_lang("field_required"),
-                            ));
-                            ?>
-                        </div>
-
-                        <label for="hours" class=" col-md-2"><?php echo app_lang('hours'); ?></label>
-                        <div class=" col-md-3">
-                            <?php
-                            echo form_dropdown("hours", array(
-                                "01" => "01",
-                                "02" => "02",
-                                "03" => "03",
-                                "04" => "04",
-                                "05" => "05",
-                                "06" => "06",
-                                "07" => "07",
-                                "08" => "08",
-                                    ), "", "class='select2 validate-hidden' id='hours' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
-                            ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="form-group">
                 <div class="row">
-                    <label for="reason" class=" col-md-3"><?php echo app_lang('reason'); ?></label>
+                    <label for="overtime_type" class=" col-md-3"><?php echo app_lang('overtime_type'); ?></label>
                     <div class=" col-md-9">
                         <?php
-                        echo form_textarea(array(
-                            "id" => "reason",
-                            "name" => "reason",
-                            "class" => "form-control",
-                            "placeholder" => app_lang('reason'),
-                            "data-rule-required" => true,
-                            "data-msg-required" => app_lang("field_required"),
-                        ));
+                        echo form_dropdown("leave_type_id", $overtimetype, "", "class='select2 validate-hidden' id='leave_type_id' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
                         ?>
                     </div>
                 </div>
             </div>
+
+
+
+
 
             <?php echo view("includes/dropzone_preview"); ?>
         </div>

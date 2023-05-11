@@ -66,6 +66,14 @@ class Overtime extends Security_Controller {
         $view_data['form_type'] = "apply_leave";
         return $this->template->view('leaves/modal_form', $view_data);
     }
+    function create_overtime_modal_form() {
+        $view_data['leave_types_dropdown'] = array("" => "-") + $this->Users_model->get_dropdown_list(array("first_name", "last_name"), "id");
+        $view_data['overtimetype'] = array("" => "-")+$this->Ovt_type_model->get_dropdown_list_ovt(array("type_name"), "id", array("ovt_type" => 2));
+
+      
+        $view_data['form_type'] = "create_overtime";
+        return $this->template->view('overtime/modal_form', $view_data);
+    }
 
     // save: assign leave 
     function assign_leave() {
