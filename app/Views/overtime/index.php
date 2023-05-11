@@ -29,11 +29,7 @@
         }, 210);
         $.ajax({
             type: "post",
-            data:{
-                id:1,
-                status:"Waiting Confirmation"
-            },
-            url: '<?php echo_uri("overtime/update_status") ?>',
+            url: '<?php echo_uri("overtime/hi") ?>',
             success:function (data) { console.log(JSON.parse(data)); }
         })
     });

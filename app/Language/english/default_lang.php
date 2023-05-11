@@ -217,6 +217,31 @@ $lang["uuid"]="uuid";
 $lang["status_overtime"]="Status Overtime";
 $lang["tipe_task_overtime"]="Tipe Task Overtime";
 
+/* overtime modal */
+$lang["add_overtime_type"] = "Add overtime type";
+$lang["edit_overtime_type"] = "Edit overtime type";
+$lang["delete_overtime_type"] = "Delete overtime type";
+$lang["overtime_type"] = "Overtime type";
+$lang["overtime_types"] = "Overtime types";
+$lang["employee_name"] = "Employee Name";
+$lang["tipe_task_overtime"] = "Tipe Task Overtime";
+$lang["hours"] = "Hours";
+$lang["apply_overtime"] = "Apply Overtime";
+
+/* overtimetype */
+$lang["ovt_type"]="Overtime Type";
+$lang["New Feature"]="New Feature";
+$lang["Bug Fixing"]="Bug Fixing";
+$lang["Testing"]="Testing";
+$lang["Deployment"]="Deployment";
+$lang["Meeting"]="Meeting";
+$lang["Waiting Confirmation"]="Waiting Confirmation";
+$lang["Acknowledge"]="Acknowledge";
+$lang["Rejected"]="Rejected";
+$lang["Approved"]="Approved";
+$lang["Revision"]="Revision";
+
+
 
 /* events */
 $lang["add_event"] = "Add event";

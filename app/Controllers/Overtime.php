@@ -194,9 +194,9 @@ class Overtime extends Security_Controller {
 
     // load leave summary tab
     function summary() {
-        $view_data['team_members_dropdown'] = json_encode($this->_get_members_dropdown_list_for_filter());
-        $view_data['leave_types_dropdown'] = json_encode($this->_get_leave_types_dropdown_list_for_filter());
-        return $this->template->view("leaves/summary", $view_data);
+        $view_data['employees_dropdown'] = json_encode($this->_get_members_dropdown_list_for_filter());
+        $view_data['overtime_types_dropdown'] = json_encode($this->_get_ovt_types_dropdown_list_for_filter());
+        return $this->template->view("overtime/summary", $view_data);
     }
 
     // list of pending leave application. prepared for datatable
@@ -218,11 +218,11 @@ class Overtime extends Security_Controller {
             "employee_id" => "numeric"
         ));
 
-        // $start_date = $this->request->getPost('start_date');
-        // $end_date = $this->request->getPost('end_date');
+        $start_date = $this->request->getPost('start_date');
+        $end_date = $this->request->getPost('end_date');
         $employee_id = $this->request->getPost('employee_id');
 
-        $options = array("employee_id"=>$employee_id,"not_status"=>"Waiting Confirmation", "login_user_id" => $this->login_user->id, "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
+        $options = array("start_date" => $start_date, "end_date" => $end_date,"employee_id"=>$employee_id,"not_status"=>"Waiting Confirmation", "login_user_id" => $this->login_user->id, "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
         $list_data = $this->Overtime_model->get_list($options)->getResult();
         $result = array();
         foreach ($list_data as $data) {
@@ -233,24 +233,28 @@ class Overtime extends Security_Controller {
 
     // list of leave summary. prepared for datatable
     function summary_list_data() {
-        $start_date = $this->request->getPost('start_date');
-        $end_date = $this->request->getPost('end_date');
-        $applicant_id = $this->request->getPost('applicant_id');
-        $leave_type_id = $this->request->getPost('leave_type_id');
+        try {
+        //     $start_date = $this->request->getPost('start_date');
+        // $end_date = $this->request->getPost('end_date');
+        // $employee_id = $this->request->getPost('employee_id');
+        // $ovt_type_id = $this->request->getPost('ovt_type_id');
 
-        $options = array("start_date" => $start_date, "end_date" => $end_date, "access_type" => $this->access_type, "allowed_members" => $this->allowed_members, "applicant_id" => $applicant_id, "leave_type_id" => $leave_type_id);
-        $list_data = $this->Leave_applications_model->get_summary($options)->getResult();
+        $options = array( "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
+        $list_data = $this->Overtime_model->get_summary($options)->getResult();
 
         $result = array();
         foreach ($list_data as $data) {
             $result[] = $this->_make_row_for_summary($data);
         }
-        echo json_encode(array("data" => $result));
+        return json_encode(array("data" => $result));
+        } catch (Exception $e) {
+            return json_encode(array("error"=>$e->getMessage()));
+        }
     }
 
     // reaturn a row of leave application list table
     private function _row_data($id) {
-        $options = array("id" => $id);
+        $options = array("uuid" => $id);
         $data = $this->Overtime_model->get_list($options)->getRow();
         return $this->_make_row($data);
     }
@@ -278,8 +282,8 @@ class Overtime extends Security_Controller {
         }
 
         return array(
+            $meta_info->uuid_meta,
             get_team_member_profile_link($data->employee_id, $meta_info->employee_meta),
-            $meta_info->username_meta,
             $meta_info->duration_meta,
             $meta_info->status_meta,
             $meta_info->tipe_meta,
@@ -292,8 +296,8 @@ class Overtime extends Security_Controller {
         $meta_info = $this->_prepare_overtime_info($data);
 
         return array(
-            get_team_member_profile_link($data->applicant_id, $meta_info->employee_meta),
-            $meta_info->username_meta,
+            get_team_member_profile_link($data->employee_id, $meta_info->employee_meta),
+            $meta_info->tipe_meta,
             $meta_info->duration_meta
         );
     }
@@ -301,7 +305,7 @@ class Overtime extends Security_Controller {
     //return required style/format for a application
     private function _prepare_overtime_info($data) {
         $image_url = get_avatar($data->employee_avatar);
-        $data->employee_meta = "<span class='avatar avatar-xs mr10'><img src='$image_url' alt=''></span>" . $data->uuid;
+        $data->employee_meta = "<span class='avatar avatar-xs mr10'><img src='$image_url' alt=''></span>" . $data->username;
 
         if (isset($data->status_overtime)) {
             if ($data->status_overtime === "pending") {
@@ -334,7 +338,9 @@ class Overtime extends Security_Controller {
             $duration = $data->hours . " " . app_lang("hour");
         }
         $data->duration_meta = $duration;
-        $data->username_meta = "<span style='background-color:" . $data->username . "' class='color-tag float-start'></span>" . $data->username;
+        if (property_exists($data,"uuid")) {
+            $data->uuid_meta = "<span style='background-color:" . $data->uuid . "' class='color-tag float-start'></span>" . $data->uuid;
+        }
         return $data;
     }
 
@@ -372,55 +378,53 @@ class Overtime extends Security_Controller {
     //update leave status
     function update_status() {
 
-        try {
-            $this->validate_submitted_data(array(
-                "id" => "required|numeric",
-                "status" => "required"
-            ));
-    
-            $applicaiton_id = $this->request->getPost('id');
-            $status = $this->request->getPost('status');
-    
-            $leave_data = array(
-                "ovt_status" => $status
-            );
-    
-            //only allow to updte the status = accept or reject for admin or specefic user
-            //otherwise user can cancel only his/her own application
-            $applicatoin_info = $this->Overtime_model->get_one($applicaiton_id);
-    
-            if ($status === "approved" || $status === "rejected") {
-                $this->access_only_allowed_members($applicatoin_info->applicant_id);
-            } else if ($status === "canceled" && $applicatoin_info->applicant_id != $this->login_user->id) {
-                //any user can't cancel other user's leave application
-                app_redirect("forbidden");
+        $this->validate_submitted_data(array(
+            "id" => "required|numeric",
+            "status" => "required|numeric"
+        ));
+
+        $applicaiton_id = $this->request->getPost('id');
+        $status = $this->request->getPost('status');
+
+        $overtime_data = array(
+            "ovt_status" => $status
+        );
+
+        //only allow to updte the status = accept or reject for admin or specefic user
+        //otherwise user can cancel only his/her own application
+        $applicatoin_info = $this->Overtime_model->get_one_uuid($applicaiton_id);
+
+        if ($status === 9 || $status === 8) {
+            $this->access_only_allowed_members($applicatoin_info->employee_id);
+        }
+
+        //user can update only the applications where status = Waiting Confirmation
+        if ($applicatoin_info->ovt_status != 6 || !($status === "9" || $status === "8" || $status === "7" || $status==="10")) {
+            app_redirect("forbidden");
+        }
+
+        $update=$this->Overtime_model->update_where($overtime_data,array("uuid"=>$applicaiton_id));
+        if ($update) {
+            $save_id=$applicaiton_id;
+        }
+        if ($save_id) {
+
+            $notification_options = array("overtime_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->employee_id);
+
+            if ($status == 9) {
+                log_notification("overtime_approved", $notification_options);
+            } else if ($status == 10) {
+                log_notification("overtime_revised", $notification_options);
+            } else if ($status == 8) {
+                log_notification("overtime_rejected", $notification_options);
+            } else if ($status == 7) {
+                log_notification("overtime_acknowledged", $notification_options);
+
             }
-    
-            //user can update only the applications where status = pending
-            if ($applicatoin_info->status != "pending" || !($status === "approved" || $status === "rejected" || $status === "canceled")) {
-                app_redirect("forbidden");
-            }
-    
-            $save_id = $this->Leave_applications_model->ci_save($leave_data, $applicaiton_id);
-            if ($save_id) {
-    
-                $notification_options = array("leave_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->applicant_id);
-    
-                if ($status == "approved") {
-                    log_notification("leave_approved", $notification_options);
-                } else if ($status == "rejected") {
-                    log_notification("leave_rejected", $notification_options);
-                } else if ($status == "canceled") {
-                    log_notification("leave_canceled", $notification_options);
-                }
-    
-                echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
-            } else {
-                echo json_encode(array("success" => false, 'message' => app_lang('error_occurred')));
-            }
-        } catch (\Exception $th) {
-            //throw $th;
-            return json_encode(array("error"),$th->getMessage());
+
+            echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
+        } else {
+            echo json_encode(array("success" => false, 'message' => app_lang('error_occurred')));
         }
     }
 
@@ -433,15 +437,16 @@ class Overtime extends Security_Controller {
         $this->validate_submitted_data(array(
             "id" => "required|numeric"
         ));
+        
 
         if (!$this->can_delete_leave_application()) {
             app_redirect("forbidden");
         }
 
 
-        // $applicatoin_info = $this->Leave_applications_model->get_one($id); 
-        // $this->access_only_allowed_members($applicatoin_info->applicant_id); 
-        // echo json_encode(array("success" => true, 'message' => app_lang('tes')));
+        // $applicatoin_info = $this->Leave_applications_model->get_one_uuid($id); 
+        // $this->access_only_allowed_members($applicatoin_info->employee_id); 
+        // // echo json_encode(array("success" => true, 'message' => app_lang('tes')));
 
         if ($this->Overtime_model->delete($id)) {
             echo json_encode(array("success" => true, 'message' => app_lang('record_deleted')));
@@ -491,15 +496,19 @@ class Overtime extends Security_Controller {
 
     //summary dropdown list of leave type 
 
-    private function _get_leave_types_dropdown_list_for_filter() {
+    private function _get_ovt_types_dropdown_list_for_filter() {
 
-        $leave_type = $this->Leave_types_model->get_dropdown_list(array("title"), "id", array("status" => "active"));
+        try {
+            $ovt_type = $this->Ovt_type_model->get_dropdown_list_ovt(array("type_name"), "id", array("ovt_type" => 1));
 
-        $leave_type_dropdown = array(array("id" => "", "text" => "- " . app_lang("leave_type") . " -"));
-        foreach ($leave_type as $id => $name) {
-            $leave_type_dropdown[] = array("id" => $id, "text" => $name);
+        $ovt_type_dropdown = array(array("id" => "", "text" => "- " . app_lang("ovt_type") . " -"));
+        foreach ($ovt_type as $id => $name) {
+            $ovt_type_dropdown[] = array("id" => $id, "text" => $name);
         }
-        return $leave_type_dropdown;
+        return $ovt_type_dropdown;
+        } catch (Exception $e) {
+            return json_encode(array("error"=>$e->getMessage()));
+        }
     }
 
     /* upload a file */

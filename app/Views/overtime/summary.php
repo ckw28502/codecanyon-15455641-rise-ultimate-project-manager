@@ -7,16 +7,16 @@
 
     $(document).ready(function () {
         $("#overtime-summary-table").appTable({
-            source: '<?php echo_uri("leaves/summary_list_data") ?>',
+            source: '<?php echo_uri("overtime/summary_list_data") ?>',
             filterDropdown: [
-                {name: "leave_type_id", class: "w200", options: <?php echo $leave_types_dropdown; ?>},
-                {name: "applicant_id", class: "w200", options: <?php echo $team_members_dropdown; ?>}
+                {name: "overtime_type_id", class: "w200", options: <?php echo $overtime_types_dropdown; ?>},
+                {name: "employee_id", class: "w200", options: <?php echo $employees_dropdown; ?>}
             ],
             dateRangeType: "yearly",
             columns: [
-                {title: '<?php echo app_lang("applicant") ?>', "class": "w30p"},
-                {title: '<?php echo app_lang("leave_type") ?>'},
-                {title: '<?php echo app_lang("total_leave_yearly") ?>'}
+                {title: '<?php echo app_lang("employee") ?>', "class": "w30p"},
+                {title: '<?php echo app_lang("overtime_type") ?>'},
+                {title: '<?php echo app_lang("total_hours_yearly") ?>'}
             ],
             printColumns: [0, 1, 2],
             xlsColumns: [0, 1, 2]

@@ -22,8 +22,21 @@ class Ovt_type_model extends Crud_model {
 
         $sql = "SELECT $ovt_type_table.*
         FROM $ovt_type_table
-        WHERE $ovt_type_table.deleted=0 $where";
+        WHERE $ovt_type_table.deleted_at is null $where";
         return $this->db->query($sql);
+    }
+    function get_dropdown_list_ovt($option_fields = array(), $key = "id", $where = array()) {
+        $where["deleted_at"] = null;
+        $list_data = $this->get_all_where($where, 0, 0, $option_fields[0])->getResult();
+        $result = array();
+        foreach ($list_data as $data) {
+            $text = "";
+            foreach ($option_fields as $option) {
+                $text .= $data->$option . " ";
+            }
+            $result[$data->$key] = $text;
+        }
+        return $result;
     }
 
 }
