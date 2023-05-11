@@ -216,6 +216,8 @@ $lang["waiting_acknowledge"]="Waiting Acknowledge";
 $lang["uuid"]="uuid";
 $lang["status_overtime"]="Status Overtime";
 $lang["tipe_task_overtime"]="Tipe Task Overtime";
+$lang["employee"]="Employee";
+$lang["total_hours_yearly"]="Total Hours Yearly";
 
 /* overtime modal */
 $lang["add_overtime_type"] = "Add overtime type";
