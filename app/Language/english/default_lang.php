@@ -229,6 +229,7 @@ $lang["hours"] = "Hours";
 $lang["apply_overtime"] = "Apply Overtime";
 
 /* overtimetype */
+$lang["ovt_type"]="Overtime Type";
 $lang["New Feature"]="New Feature";
 $lang["Bug Fixing"]="Bug Fixing";
 $lang["Testing"]="Testing";

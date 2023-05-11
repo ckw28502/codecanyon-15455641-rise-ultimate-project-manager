@@ -52,7 +52,7 @@ class Overtime_model extends Crud_model {
         $end_date = $this->_get_clean_value($options, "end_date");
 
         if ($start_date && $end_date) {
-            $where .= " AND ($overtime_table.start_date BETWEEN '$start_date' AND '$end_date') ";
+            $where .= " AND ($overtime_table.overtime_date BETWEEN '$start_date' AND '$end_date') ";
         }
 
         $employee_id = $this->_get_clean_value($options, "employee_id");
@@ -98,30 +98,30 @@ class Overtime_model extends Crud_model {
     }
 
     function get_summary($options = array()) {
-        $leave_applications_table = $this->db->prefixTable('leave_applications');
+        $overtime_table = $this->db->prefixTable('overtime');
         $users_table = $this->db->prefixTable('users');
-        $leave_types_table = $this->db->prefixTable('leave_types');
+        $ovt_type_table = $this->db->prefixTable('ovt_type');
 
         $where = "";
 
-        $where .= " AND $leave_applications_table.status='approved'";
+        $where .= " AND $ovt_type_table.type_name='Approved'";
 
 
         $start_date = $this->_get_clean_value($options, "start_date");
         $end_date = $this->_get_clean_value($options, "end_date");
 
         if ($start_date && $end_date) {
-            $where .= " AND ($leave_applications_table.start_date BETWEEN '$start_date' AND '$end_date') ";
+            $where .= " AND ($overtime_table.overtime_date BETWEEN '$start_date' AND '$end_date') ";
         }
 
-        $applicant_id = $this->_get_clean_value($options, "applicant_id");
-        if ($applicant_id) {
-            $where .= " AND $leave_applications_table.applicant_id=$applicant_id";
+        $employee_id = $this->_get_clean_value($options, "employee_id");
+        if ($employee_id) {
+            $where .= " AND $overtime_table.employee_id=$employee_id";
         }
 
-        $leave_type_id = $this->_get_clean_value($options, "leave_type_id");
-        if ($leave_type_id) {
-            $where .= " AND $leave_applications_table.leave_type_id=$leave_type_id";
+        $ovt_type_id = $this->_get_clean_value($options, "ovt_type_id");
+        if ($ovt_type_id) {
+            $where .= " AND $overtime_table.ovt_type_id=$ovt_type_id";
         }
 
         $access_type = $this->_get_clean_value($options, "access_type");
@@ -138,19 +138,18 @@ class Overtime_model extends Crud_model {
             if ($login_user_id) {
                 $allowed_members .= "," . $login_user_id;
             }
-            $where .= " AND $leave_applications_table.applicant_id IN($allowed_members)";
+            $where .= " AND $overtime_table.employee_id IN($allowed_members)";
         }
 
 
-        $sql = "SELECT  SUM($leave_applications_table.total_hours) AS total_hours,
-                SUM($leave_applications_table.total_days) AS total_days, MAX($leave_applications_table.applicant_id) AS applicant_id, $leave_applications_table.status,
-                CONCAT($users_table.first_name, ' ',$users_table.last_name) AS applicant_name, $users_table.image as applicant_avatar,
-                $leave_types_table.title as leave_type_title,   $leave_types_table.color as leave_type_color
-            FROM $leave_applications_table
-            LEFT JOIN $users_table ON $users_table.id= $leave_applications_table.applicant_id
-            LEFT JOIN $leave_types_table ON $leave_types_table.id= $leave_applications_table.leave_type_id        
-            WHERE $leave_applications_table.deleted=0 $where
-            GROUP BY $leave_applications_table.applicant_id, $leave_applications_table.leave_type_id";
+        $sql = "SELECT  SUM($overtime_table.hours) as hours, MAX($overtime_table.employee_id) as employee_id, $overtime_table.ovt_status as status,
+                CONCAT($users_table.first_name, ' ',$users_table.last_name) AS username, $users_table.image as employee_avatar,
+                $ovt_type_table.type_name as tipe_task_overtime
+            FROM $overtime_table
+            LEFT JOIN $users_table ON $users_table.id= $overtime_table.employee_id
+            LEFT JOIN $ovt_type_table ON $ovt_type_table.id= $overtime_table.ovt_type_id        
+            WHERE $overtime_table.deleted_at is null
+            GROUP BY $overtime_table.employee_id, $overtime_table.ovt_type_id";
         return $this->db->query($sql);
     }
 
