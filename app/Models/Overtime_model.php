@@ -154,4 +154,8 @@ class Overtime_model extends Crud_model {
         return $this->db->query($sql);
     }
 
+    function get_one_uuid($id = 0) {
+        return $this->get_one_where(array('uuid' => $id));
+    }
+
 }

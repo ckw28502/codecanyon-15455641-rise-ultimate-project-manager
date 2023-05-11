@@ -250,7 +250,7 @@ class Overtime extends Security_Controller {
 
     // reaturn a row of leave application list table
     private function _row_data($id) {
-        $options = array("id" => $id);
+        $options = array("uuid" => $id);
         $data = $this->Overtime_model->get_list($options)->getRow();
         return $this->_make_row($data);
     }
@@ -375,52 +375,55 @@ class Overtime extends Security_Controller {
         try {
             $this->validate_submitted_data(array(
                 "id" => "required|numeric",
-                "status" => "required"
+                "status" => "required|numeric"
             ));
     
             $applicaiton_id = $this->request->getPost('id');
             $status = $this->request->getPost('status');
     
-            $leave_data = array(
+            $overtime_data = array(
                 "ovt_status" => $status
             );
     
             //only allow to updte the status = accept or reject for admin or specefic user
             //otherwise user can cancel only his/her own application
-            $applicatoin_info = $this->Overtime_model->get_one($applicaiton_id);
+            $applicatoin_info = $this->Overtime_model->get_one_uuid($applicaiton_id);
     
-            if ($status === "approved" || $status === "rejected") {
-                $this->access_only_allowed_members($applicatoin_info->applicant_id);
-            } else if ($status === "canceled" && $applicatoin_info->applicant_id != $this->login_user->id) {
-                //any user can't cancel other user's leave application
+            if ($status === 9 || $status === 8) {
+                $this->access_only_allowed_members($applicatoin_info->employee_id);
+            }
+    
+            //user can update only the applications where status = Waiting Confirmation
+            if ($applicatoin_info->ovt_status != 6 || !($status === "9" || $status === "8" || $status === "7" || $status==="10")) {
                 app_redirect("forbidden");
             }
     
-            //user can update only the applications where status = pending
-            if ($applicatoin_info->status != "pending" || !($status === "approved" || $status === "rejected" || $status === "canceled")) {
-                app_redirect("forbidden");
+            //$save_id = $this->Overtime_model->ci_save($overtime_data, $applicaiton_id);
+            $update=$this->Overtime_model->update_where($overtime_data,array("uuid"=>$applicaiton_id));
+            if ($update) {
+                $save_id=$applicaiton_id;
             }
-    
-            $save_id = $this->Leave_applications_model->ci_save($leave_data, $applicaiton_id);
             if ($save_id) {
     
-                $notification_options = array("leave_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->applicant_id);
+                $notification_options = array("overtime_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->employee_id);
     
-                if ($status == "approved") {
-                    log_notification("leave_approved", $notification_options);
-                } else if ($status == "rejected") {
-                    log_notification("leave_rejected", $notification_options);
-                } else if ($status == "canceled") {
-                    log_notification("leave_canceled", $notification_options);
+                if ($status == 9) {
+                    log_notification("overtime_approved", $notification_options);
+                } else if ($status == 10) {
+                    log_notification("overtime_revised", $notification_options);
+                } else if ($status == 8) {
+                    log_notification("overtime_rejected", $notification_options);
+                } else if ($status == 7) {
+                    log_notification("overtime_acknowledged", $notification_options);
+    
                 }
     
                 echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
             } else {
                 echo json_encode(array("success" => false, 'message' => app_lang('error_occurred')));
             }
-        } catch (\Exception $th) {
-            //throw $th;
-            return json_encode(array("error"),$th->getMessage());
+        } catch (Exception $e) {
+            return json_encode(array("error"=>$e->getMessage()));
         }
     }
 
@@ -440,7 +443,7 @@ class Overtime extends Security_Controller {
 
 
         // $applicatoin_info = $this->Leave_applications_model->get_one($id); 
-        // $this->access_only_allowed_members($applicatoin_info->applicant_id); 
+        // $this->access_only_allowed_members($applicatoin_info->employee_id); 
         // echo json_encode(array("success" => true, 'message' => app_lang('tes')));
 
         if ($this->Overtime_model->delete($id)) {
