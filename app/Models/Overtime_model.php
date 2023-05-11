@@ -104,7 +104,7 @@ class Overtime_model extends Crud_model {
 
         $where = "";
 
-        $where .= " AND $ovt_type_table.type_name='Approved'";
+        $where .= " AND $overtime_table.ovt_status>5 AND MOD($overtime_table.ovt_status,2)=1";
 
 
         $start_date = $this->_get_clean_value($options, "start_date");
@@ -148,7 +148,7 @@ class Overtime_model extends Crud_model {
             FROM $overtime_table
             LEFT JOIN $users_table ON $users_table.id= $overtime_table.employee_id
             LEFT JOIN $ovt_type_table ON $ovt_type_table.id= $overtime_table.ovt_type_id        
-            WHERE $overtime_table.deleted_at is null
+            WHERE $overtime_table.deleted_at is null $where
             GROUP BY $overtime_table.employee_id, $overtime_table.ovt_type_id";
         return $this->db->query($sql);
     }

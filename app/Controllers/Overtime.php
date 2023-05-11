@@ -234,12 +234,12 @@ class Overtime extends Security_Controller {
     // list of leave summary. prepared for datatable
     function summary_list_data() {
         try {
-        //     $start_date = $this->request->getPost('start_date');
-        // $end_date = $this->request->getPost('end_date');
-        // $employee_id = $this->request->getPost('employee_id');
-        // $ovt_type_id = $this->request->getPost('ovt_type_id');
+            $start_date = $this->request->getPost('start_date');
+        $end_date = $this->request->getPost('end_date');
+        $employee_id = $this->request->getPost('employee_id');
+        $ovt_type_id = $this->request->getPost('ovt_type_id');
 
-        $options = array( "access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
+        $options = array( "ovt_type_id" => $ovt_type_id,"employee_id" => $employee_id,"end_date" => $end_date,"start_date" => $start_date,"access_type" => $this->access_type, "allowed_members" => $this->allowed_members);
         $list_data = $this->Overtime_model->get_summary($options)->getResult();
 
         $result = array();
@@ -487,7 +487,7 @@ class Overtime extends Security_Controller {
 
         $members = $this->Users_model->get_dropdown_list(array("first_name", "last_name"), "id", $where);
 
-        $members_dropdown = array(array("id" => "", "text" => "- " . app_lang("team_member") . " -"));
+        $members_dropdown = array(array("id" => "", "text" => "- " . app_lang("employee") . " -"));
         foreach ($members as $id => $name) {
             $members_dropdown[] = array("id" => $id, "text" => $name);
         }
@@ -499,7 +499,7 @@ class Overtime extends Security_Controller {
     private function _get_ovt_types_dropdown_list_for_filter() {
 
         try {
-            $ovt_type = $this->Ovt_type_model->get_dropdown_list_ovt(array("type_name"), "id", array("ovt_type" => 1));
+            $ovt_type = $this->Ovt_type_model->get_dropdown_list_ovt(array("type_name"), "id", array("ovt_type" => 2));
 
         $ovt_type_dropdown = array(array("id" => "", "text" => "- " . app_lang("ovt_type") . " -"));
         foreach ($ovt_type as $id => $name) {
