@@ -403,10 +403,7 @@ class Overtime extends Security_Controller {
             app_redirect("forbidden");
         }
 
-        $update=$this->Overtime_model->update_where($overtime_data,array("uuid"=>$applicaiton_id));
-        if ($update) {
-            $save_id=$applicaiton_id;
-        }
+        $save_id=$this->Overtime_model->update_where($overtime_data,array("uuid"=>$applicaiton_id));
         if ($save_id) {
 
             $notification_options = array("overtime_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->employee_id);
@@ -444,11 +441,12 @@ class Overtime extends Security_Controller {
         }
 
 
-        // $applicatoin_info = $this->Leave_applications_model->get_one_uuid($id); 
-        // $this->access_only_allowed_members($applicatoin_info->employee_id); 
+         $applicatoin_info = $this->Overtime_model->get_one_uuid($id); 
+         $this->access_only_allowed_members($applicatoin_info->employee_id); 
         // // echo json_encode(array("success" => true, 'message' => app_lang('tes')));
+        return $this->Overtime_model->delete_overtime($id);
 
-        if ($this->Overtime_model->delete($id)) {
+        if ($this->Overtime_model->delete_overtime($id)) {
             echo json_encode(array("success" => true, 'message' => app_lang('record_deleted')));
         } else {
             echo json_encode(array("success" => false, 'message' => app_lang('record_cannot_be_deleted')));
