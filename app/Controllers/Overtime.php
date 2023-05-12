@@ -67,14 +67,38 @@ class Overtime extends Security_Controller {
         return $this->template->view('leaves/modal_form', $view_data);
     }
     function create_overtime_modal_form() {
-        $view_data['leave_types_dropdown'] = array("" => "-") + $this->Users_model->get_dropdown_list(array("first_name", "last_name"), "id");
+        $view_data['employee'] = array("" => "-") + $this->Users_model->get_dropdown_list(array("first_name", "last_name"), "id");
         $view_data['overtimetype'] = array("" => "-")+$this->Ovt_type_model->get_dropdown_list_ovt(array("type_name"), "id", array("ovt_type" => 2));
 
       
         $view_data['form_type'] = "create_overtime";
         return $this->template->view('overtime/modal_form', $view_data);
     }
+    function create_overtime() {
+        $leave_data = $this->_prepare_leave_form_data();
+        $employee_id = $this->request->getPost('employee_id');
+        $duration = $this->request->getPost('duration');
+        $overtime_type_id = $this->request->getPost('overtime_type_id');
+        $leave_data['uuid'] = 11;
 
+        $leave_data['employee_id'] = $employee_id;
+        $leave_data['project_id'] = 1;
+        $leave_data['task_id'] = 1;
+        $leave_data['overtime_date'] = get_current_utc_time();;
+        $leave_data['hours'] = $duration;
+        $leave_data['ovt_type_id'] = $overtime_type_id;
+        $leave_data['ovt_status'] = 6;
+        $leave_data = clean_data($leave_data);
+        
+
+        $save_id = $this->Overtime_model->ci_save_overtime($leave_data);
+        if ($save_id) {
+            log_notification("leave_application_submitted", array("leave_id" => $save_id));
+            echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
+        } else {
+            echo json_encode(array("success" => true, 'message' => $leave_data['error_occurred']));
+        }
+    }
     // save: assign leave 
     function assign_leave() {
         $leave_data = $this->_prepare_leave_form_data();

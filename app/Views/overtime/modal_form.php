@@ -1,4 +1,4 @@
-<?php echo form_open(get_uri("leaves/" . $form_type), array("id" => "leave-form", "class" => "general-form", "role" => "form")); ?>
+<?php echo form_open(get_uri("overtime/" . $form_type), array("id" => "leave-form", "class" => "general-form", "role" => "form")); ?>
 <div id="leaves-dropzone" class="post-dropzone">
     <div class="modal-body clearfix">
         <div class="container-fluid">
@@ -28,7 +28,7 @@
                     <label for="employee" class=" col-md-3"><?php echo app_lang('employee'); ?></label>
                     <div class=" col-md-9">
                         <?php
-                        echo form_dropdown("leave_type_id", $leave_types_dropdown, "", "class='select2 validate-hidden' id='leave_type_id' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
+                        echo form_dropdown("employee_id", $employee, "", "class='select2 validate-hidden' id='employee_id' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
                         ?>
                     </div>
                 </div>
@@ -48,7 +48,7 @@
                     <label for="overtime_type" class=" col-md-3"><?php echo app_lang('overtime_type'); ?></label>
                     <div class=" col-md-9">
                         <?php
-                        echo form_dropdown("leave_type_id", $overtimetype, "", "class='select2 validate-hidden' id='leave_type_id' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
+                        echo form_dropdown("overtime_type_id", $overtimetype, "", "class='select2 validate-hidden' id='overtime_type_id' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
                         ?>
                     </div>
                 </div>
