@@ -446,7 +446,7 @@ class Overtime extends Security_Controller {
         $this->access_only_allowed_members($applicatoin_info->employee_id); 
         
 //output selalu record in use, query delete sudah ditembak id tetep ga bisa. ada yang nyantol?
-        if ($this->Overtime_model->delete($id)) {
+        if ($this->Overtime_model->delete_overtime($id)) {
             echo json_encode(array("success" => true, 'message' => app_lang('record_deleted')));
         } else {
             echo json_encode(array("success" => false, 'message' => app_lang('record_cannot_be_deleted')));
