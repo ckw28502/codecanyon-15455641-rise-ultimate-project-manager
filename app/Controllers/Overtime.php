@@ -75,7 +75,9 @@ class Overtime extends Security_Controller {
         return $this->template->view('overtime/modal_form', $view_data);
     }
     function create_overtime() {
-        $leave_data = $this->_prepare_leave_form_data();
+        
+        try {
+            $leave_data = $this->_prepare_overtime_form_data();
         $employee_id = $this->request->getPost('employee_id');
         $duration = $this->request->getPost('duration');
         $overtime_type_id = $this->request->getPost('overtime_type_id');
@@ -92,12 +94,17 @@ class Overtime extends Security_Controller {
         
 
         $save_id = $this->Overtime_model->ci_save_overtime($leave_data);
+        return json_encode($save_id);
         if ($save_id) {
             log_notification("leave_application_submitted", array("leave_id" => $save_id));
             echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
         } else {
             echo json_encode(array("success" => true, 'message' => $leave_data['error_occurred']));
         }
+        } catch (Exception $E) {
+            return json_encode($E->getMessage());
+        }
+        
     }
     // save: assign leave 
     function assign_leave() {
@@ -143,75 +150,37 @@ class Overtime extends Security_Controller {
 
     /* prepare common data for a leave application both for apply a leave or assign a leave */
 
-    private function _prepare_leave_form_data() {
-
-        $this->validate_submitted_data(array(
-            "leave_type_id" => "required|numeric",
-            "reason" => "required"
-        ));
-
-        $duration = $this->request->getPost('duration');
-        $hours_per_day = 8;
-        $hours = 0;
-        $days = 0;
-
-        $target_path = get_setting("timeline_file_path");
-        $files_data = move_files_from_temp_dir_to_permanent_dir($target_path, "leave");
-        $new_files = unserialize($files_data);
-
-        if ($duration === "multiple_days") {
-
+    private function _prepare_overtime_form_data() {
+        try {
             $this->validate_submitted_data(array(
-                "start_date" => "required",
-                "end_date" => "required"
+                "overtime_type_id" => "required|numeric"
+                
             ));
+    
+            $duration = $this->request->getPost('duration');
 
-            $start_date = $this->request->getPost('start_date');
-            $end_date = $this->request->getPost('end_date');
+    
+            $target_path = get_setting("timeline_file_path");
+            $files_data = move_files_from_temp_dir_to_permanent_dir($target_path, "overtime");
+            $new_files = unserialize($files_data);
+    
+            
+    
+            $now = get_current_utc_time();
+            $leave_data = array(
+                "overtime_type_id" => $this->request->getPost('overtime_type_id'),
 
-            //calculate total days
-            $d_start = new \DateTime($start_date);
-            $d_end = new \DateTime($end_date);
-            $d_diff = $d_start->diff($d_end);
-
-            $days = $d_diff->days + 1;
-            $hours = $days * $hours_per_day;
-        } else if ($duration === "hours") {
-
-            $this->validate_submitted_data(array(
-                "hour_date" => "required"
-            ));
-
-            $start_date = $this->request->getPost('hour_date');
-            $end_date = $start_date;
-            $hours = $this->request->getPost('hours');
-            $days = $hours / $hours_per_day;
-        } else {
-
-            $this->validate_submitted_data(array(
-                "single_date" => "required"
-            ));
-
-            $start_date = $this->request->getPost('single_date');
-            $end_date = $start_date;
-            $hours = $hours_per_day;
-            $days = 1;
+                "created_by" => $this->login_user->id,
+                "created_at" => $now,
+                "duration" => $duration,
+                "files" => serialize($new_files)
+            );
+    
+            return $leave_data;
+        } catch (Exception $e) {
+            return json_encode($e->getMessage());
         }
-
-        $now = get_current_utc_time();
-        $leave_data = array(
-            "leave_type_id" => $this->request->getPost('leave_type_id'),
-            "start_date" => $start_date,
-            "end_date" => $end_date,
-            "reason" => $this->request->getPost('reason'),
-            "created_by" => $this->login_user->id,
-            "created_at" => $now,
-            "total_hours" => $hours,
-            "total_days" => $days,
-            "files" => serialize($new_files)
-        );
-
-        return $leave_data;
+        
     }
 
     // load pending approval tab
@@ -435,7 +404,7 @@ class Overtime extends Security_Controller {
             app_redirect("forbidden");
         }
 
-        $save_id=$this->Overtime_model->update_where($overtime_data,array("uuid"=>$applicaiton_id));
+        $save_id=$this->Overtime_model->ci_save_overtime($overtime_data,array("uuid"=>$applicaiton_id));
         if ($save_id) {
 
             $notification_options = array("overtime_id" => $applicaiton_id, "to_user_id" => $applicatoin_info->employee_id);

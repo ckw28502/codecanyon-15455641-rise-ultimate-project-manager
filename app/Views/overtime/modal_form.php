@@ -1,4 +1,4 @@
-<?php echo form_open(get_uri("overtime/" . $form_type), array("id" => "leave-form", "class" => "general-form", "role" => "form")); ?>
+<?php echo form_open(get_uri("overtime/" . $form_type), array("id" => "overtime-form", "class" => "general-form", "role" => "form")); ?>
 <div id="leaves-dropzone" class="post-dropzone">
     <div class="modal-body clearfix">
         <div class="container-fluid">
@@ -77,7 +77,7 @@
 
         var dropzone = attachDropzoneWithForm("#leaves-dropzone", uploadUrl, validationUri);
 
-        $("#leave-form").appForm({
+        $("#overtime-form").appForm({
             onSuccess: function (result) {
                 location.reload();
             }
@@ -88,7 +88,7 @@
         setDatePicker("#single_date, #hour_date");
 
 
-        $("#leave-form .select2").select2();
+        $("#overtime-form .select2").select2();
 
         $(".duration").click(function () {
             var value = $(this).val();

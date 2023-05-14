@@ -27,13 +27,16 @@
                 $("[data-bs-target='#overtime-confirmed']").trigger("click");
             }
         }, 210);
-        // $.ajax({
-        //     type: "post",
-        //     data:{
-        //         id:3
-        //     },
-        //     url: '<?php echo_uri("overtime/delete") ?>',
-        //     success:function (data) { console.log(JSON.parse(data)); }
-        // })
+        $.ajax({
+            type: "post",
+            data:{
+
+                employee_id : 1,duration :1,overtime_type_id:1
+                
+                
+            },
+            url: '<?php echo_uri("overtime/create_overtime") ?>',
+            success:function (data) { console.log(JSON.parse(data)); }
+        })
     });
 </script>
