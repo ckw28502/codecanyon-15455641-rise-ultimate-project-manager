@@ -29,7 +29,10 @@
         }, 210);
         // $.ajax({
         //     type: "post",
-        //     url: '<?php echo_uri("overtime/summary") ?>',
+        //     data:{
+        //         id:3
+        //     },
+        //     url: '<?php echo_uri("overtime/delete") ?>',
         //     success:function (data) { console.log(JSON.parse(data)); }
         // })
     });

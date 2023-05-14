@@ -5,6 +5,11 @@ namespace App\Models;
 class Overtime_model extends Crud_model {
 
     protected $table = null;
+    protected $primaryKey='uuid';
+    protected $useSoftDeletes=true;
+    protected $useTimestamps=false;
+    protected $dateformat='date_time';
+    protected $deletedField='deleted_at';
 
     function __construct() {
         $this->table = 'overtime';
@@ -25,6 +30,58 @@ class Overtime_model extends Crud_model {
             LEFT JOIN $ovt_types_table s ON s.id= $overtimes_table.ovt_status        
             WHERE $overtimes_table.deleted_at IS NULL AND $overtimes_table.uuid=$uuid";
         return $this->db->query($sql)->getRow();
+    }
+
+    function delete_overtime($id = 0, $undo = false) {
+        try {
+            validate_numeric_value($id);
+        $data = array('deleted_at' => 'NOW()');
+        if ($undo === true) {
+            $data = array('deleted_at' => null);
+        }
+        $this->db_builder->where("uuid", $id);
+        $success = $this->db_builder->update($data);
+        if ($success) {
+            if ($this->log_activity) {
+                if ($undo) {
+                    // remove previous deleted log.
+                    $this->Activity_logs_model->delete_where(array("action" => "deleted", "log_type" => $this->log_type, "log_type_id" => $id));
+                } else {
+                    //to log this activity check the title
+                    $model_info = $this->get_one_uuid($id);
+                    $log_for_id = 0;
+                    if ($this->log_for_key) {
+                        $log_for_key = $this->log_for_key;
+                        $log_for_id = $model_info->$log_for_key;
+                    }
+                    $log_type_title_key = $this->log_type_title_key;
+                    $log_type_title = $model_info->$log_type_title_key;
+                    $log_data = array(
+                        "action" => "deleted",
+                        "log_type" => $this->log_type,
+                        "log_type_title" => $log_type_title ? $log_type_title : "",
+                        "log_type_id" => $id,
+                        "log_for" => $this->log_for,
+                        "log_for_id" => $log_for_id,
+                    );
+                    $this->Activity_logs_model->ci_save($log_data);
+                }
+            }
+        }
+
+        try {
+            app_hooks()->do_action("app_hook_data_delete", array(
+                "id" => $id,
+                "table" => $this->table
+            ));
+        } catch (\Exception $ex) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $ex]);
+        }
+
+        return $success;
+        } catch (\Exception $e) {
+            return json_encode($e->getMessage());
+        }
     }
 
     function get_list($options = array()) {
@@ -93,7 +150,6 @@ class Overtime_model extends Crud_model {
         LEFT JOIN $ovt_type_table t ON t.id=$overtime_table.ovt_type_id
         LEFT JOIN $ovt_status_table s ON s.id=$overtime_table.ovt_status
         WHERE $overtime_table.deleted_at IS NULL $where";
-        //$sql="SELECT $overtime_table.* from $overtime_table WHERE $overtime_table.deleted_at IS NULL";
         return $this->db->query($sql);
     }
 
@@ -157,4 +213,142 @@ class Overtime_model extends Crud_model {
         return $this->get_one_where(array('uuid' => $id));
     }
 
+    function ci_save(&$data = array(), $id = 0) {
+        try {
+            //allowed fields should be assigned
+        $db_fields = $this->db->getFieldNames($this->table);
+        foreach ($db_fields as $field) {
+            if ($field !== "uuid") {
+                array_push($this->allowedFields, $field);
+            }
+        }
+
+        //unset custom created by field if it's defined for activity log
+        $activity_log_created_by_app = false;
+        if (get_array_value($data, "activity_log_created_by_app")) {
+            $activity_log_created_by_app = true;
+            unset($data["activity_log_created_by_app"]);
+        }
+
+        if ($id) {
+            $id = $this->db->escapeString($id);
+
+            //update
+            $where = array("uuid" => $id);
+
+            //to log an activity we have to know the changes. now collect the data before update anything
+            if ($this->log_activity) {
+                $data_before_update = $this->get_one_uuid($id);
+            }
+
+            $success = $this->update_where($data, $where);
+            if ($success) {
+                if ($this->log_activity) {
+                    //unset status_changed_at field for task update
+                    if ($this->log_type === "task" && isset($data["status_changed_at"])) {
+                        unset($data["status_changed_at"]);
+                    }
+
+                    //to log this activity, check the changes
+                    $fields_changed = array();
+                    foreach ($data as $field => $value) {
+                        if ($data_before_update->$field != $value) {
+                            $fields_changed[$field] = array("from" => $data_before_update->$field, "to" => $value);
+                        }
+                    }
+                    //has changes? log the changes.
+                    if (count($fields_changed)) {
+                        $log_for_id = 0;
+                        if ($this->log_for_key) {
+                            $log_for_key = $this->log_for_key;
+                            $log_for_id = $data_before_update->$log_for_key;
+                        }
+
+                        $log_for_id2 = 0;
+                        if ($this->log_for_key2) {
+                            $log_for_key2 = $this->log_for_key2;
+                            $log_for_id2 = $data_before_update->$log_for_key2;
+                        }
+
+                        $log_type_title_key = $this->log_type_title_key;
+                        $log_type_title = isset($data_before_update->$log_type_title_key) ? $data_before_update->$log_type_title_key : "";
+
+                        $log_data = array(
+                            "action" => "updated",
+                            "log_type" => $this->log_type,
+                            "log_type_title" => $log_type_title,
+                            "log_type_id" => $id,
+                            "changes" => serialize($fields_changed),
+                            "log_for" => $this->log_for,
+                            "log_for_id" => $log_for_id,
+                            "log_for2" => $this->log_for2,
+                            "log_for_id2" => $log_for_id2,
+                        );
+                        $this->Activity_logs_model->ci_save($log_data, $activity_log_created_by_app);
+                        $activity_log_id = $this->db->insertID();
+                        $data["activity_log_id"] = $activity_log_id;
+                    }
+                }
+            }
+
+            try {
+                app_hooks()->do_action("app_hook_data_update", array(
+                    "id" => $id,
+                    "table" => $this->table,
+                    "data" => $data
+                ));
+            } catch (\Exception $ex) {
+                log_message('error', '[ERROR] {exception}', ['exception' => $ex]);
+            }
+
+            return $success;
+        } else {
+            //insert
+            if ($this->db_builder->insert($data)) {
+                $insert_id = $this->db->insertID();
+                if ($this->log_activity) {
+                    //log this activity
+                    $log_for_id = 0;
+                    if ($this->log_for_key) {
+                        $log_for_id = get_array_value($data, $this->log_for_key);
+                    }
+
+                    $log_for_id2 = 0;
+                    if ($this->log_for_key2) {
+                        $log_for_id2 = get_array_value($data, $this->log_for_key2);
+                    }
+
+                    $log_type_title = get_array_value($data, $this->log_type_title_key);
+                    $log_data = array(
+                        "action" => "created",
+                        "log_type" => $this->log_type,
+                        "log_type_title" => $log_type_title ? $log_type_title : "",
+                        "log_type_id" => $insert_id,
+                        "log_for" => $this->log_for,
+                        "log_for_id" => $log_for_id,
+                        "log_for2" => $this->log_for2,
+                        "log_for_id2" => $log_for_id2,
+                    );
+                    $this->Activity_logs_model->ci_save($log_data, $activity_log_created_by_app);
+                    $activity_log_id = $this->db->insertID();
+                    $data["activity_log_id"] = $activity_log_id;
+                }
+
+                try {
+                    app_hooks()->do_action("app_hook_data_insert", array(
+                        "id" => $insert_id,
+                        "table" => $this->table,
+                        "data" => $data
+                    ));
+                } catch (\Exception $ex) {
+                    log_message('error', '[ERROR] {exception}', ['exception' => $ex]);
+                }
+
+                return $insert_id;
+            }
+        }
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
 }
