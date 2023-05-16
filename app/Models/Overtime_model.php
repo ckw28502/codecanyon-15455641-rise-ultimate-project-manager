@@ -213,7 +213,7 @@ class Overtime_model extends Crud_model {
         return $this->get_one_where(array('uuid' => $id));
     }
 
-    function ci_save(&$data = array(), $id = 0) {
+    function ci_save_overtime(&$data = array(), $id = 0) {
         try {
             //allowed fields should be assigned
         $db_fields = $this->db->getFieldNames($this->table);
