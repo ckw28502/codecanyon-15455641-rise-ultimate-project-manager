@@ -83,7 +83,14 @@ class Overtime_model extends Crud_model {
             return json_encode($e->getMessage());
         }
     }
+    function get_maxid() {
+        $overtime_table = $this->db->prefixTable('overtime');
+        
+        $sql="SELECT MAX(CAST($overtime_table.uuid AS INT)+1) AS uuid
+        FROM $overtime_table";
+        return $this->db->query($sql);
 
+    }
     function get_list($options = array()) {
         $overtime_table = $this->db->prefixTable('overtime');
         $users_table = $this->db->prefixTable('users');
@@ -149,7 +156,8 @@ class Overtime_model extends Crud_model {
         LEFT JOIN $users_table ON $users_table.id=$overtime_table.employee_id
         LEFT JOIN $ovt_type_table t ON t.id=$overtime_table.ovt_type_id
         LEFT JOIN $ovt_status_table s ON s.id=$overtime_table.ovt_status
-        WHERE $overtime_table.deleted_at IS NULL $where";
+        WHERE $overtime_table.deleted_at IS NULL $where
+        ORDER BY CAST($overtime_table.uuid AS INT)";
         return $this->db->query($sql);
     }
 
@@ -304,6 +312,7 @@ class Overtime_model extends Crud_model {
             return $success;
         } else {
             //insert
+            
             if ($this->db_builder->insert($data)) {
                 $insert_id = $this->db->insertID();
                 if ($this->log_activity) {

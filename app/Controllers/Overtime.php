@@ -77,12 +77,11 @@ class Overtime extends Security_Controller {
     function create_overtime() {
         
         try {
-            $leave_data = $this->_prepare_overtime_form_data();
+        $leave_data = $this->_prepare_overtime_form_data();
         $employee_id = $this->request->getPost('employee_id');
         $duration = $this->request->getPost('duration');
         $overtime_type_id = $this->request->getPost('overtime_type_id');
-        $leave_data['uuid'] = 11;
-
+        $leave_data['uuid'] = $this->Overtime_model->get_maxid()->getResult()[0]->uuid;
         $leave_data['employee_id'] = $employee_id;
         $leave_data['project_id'] = 1;
         $leave_data['task_id'] = 1;
@@ -92,9 +91,9 @@ class Overtime extends Security_Controller {
         $leave_data['ovt_status'] = 6;
         $leave_data = clean_data($leave_data);
         
+        
 
         $save_id = $this->Overtime_model->ci_save_overtime($leave_data);
-        return json_encode($save_id);
         if ($save_id) {
             log_notification("leave_application_submitted", array("leave_id" => $save_id));
             echo json_encode(array("success" => true, "data" => $this->_row_data($save_id), 'id' => $save_id, 'message' => app_lang('record_saved')));
@@ -168,12 +167,9 @@ class Overtime extends Security_Controller {
     
             $now = get_current_utc_time();
             $leave_data = array(
-                "overtime_type_id" => $this->request->getPost('overtime_type_id'),
-
-                "created_by" => $this->login_user->id,
                 "created_at" => $now,
-                "duration" => $duration,
-                "files" => serialize($new_files)
+                "hours" => $duration,
+                //"files" => serialize($new_files)
             );
     
             return $leave_data;

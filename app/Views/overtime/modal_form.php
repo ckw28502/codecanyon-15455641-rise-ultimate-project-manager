@@ -2,26 +2,7 @@
 <div id="leaves-dropzone" class="post-dropzone">
     <div class="modal-body clearfix">
         <div class="container-fluid">
-            <?php if ($form_type == "assign_leave") { ?>
-                <div class="form-group">
-                    <div class="row">
-                        <label for="applicant_id" class=" col-md-3"><?php echo app_lang('team_member'); ?></label>
-                        <div class=" col-md-9">
-                            <?php
-                            if (isset($team_members_info)) {
-                                $image_url = get_avatar($team_members_info->image);
-                                echo "<span class='avatar avatar-xs mr10'><img src='$image_url' alt=''></span>" . $team_members_info->first_name . " " . $team_members_info->last_name;
-                                ?>
-                                <input type="hidden" name="applicant_id" value="<?php echo $team_members_info->id; ?>" />
-                                <?php
-                            } else {
-                                echo form_dropdown("applicant_id", $team_members_dropdown, "", "class='select2 validate-hidden' id='applicant_id' data-rule-required='true', data-msg-required='" . app_lang('field_required') . "'");
-                            }
-                            ?>
-                        </div>
-                    </div>
-                </div>
-            <?php } ?>
+            
 
             <div class="form-group">
                 <div class="row">
