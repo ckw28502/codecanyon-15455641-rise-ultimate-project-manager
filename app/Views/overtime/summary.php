@@ -9,7 +9,6 @@
         $("#overtime-summary-table").appTable({
             source: '<?php echo_uri("overtime/summary_list_data") ?>',
             filterDropdown: [
-                {name: "overtime_type_id", class: "w200", options: <?php echo $overtime_types_dropdown; ?>},
                 {name: "employee_id", class: "w200", options: <?php echo $employees_dropdown; ?>}
             ],
             dateRangeType: "yearly",
