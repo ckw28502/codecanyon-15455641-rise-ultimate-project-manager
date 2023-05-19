@@ -192,7 +192,7 @@ class Overtime extends Security_Controller {
     // load leave summary tab
     function summary() {
         $view_data['employees_dropdown'] = json_encode($this->_get_members_dropdown_list_for_filter());
-        $view_data['overtime_types_dropdown'] = json_encode($this->_get_ovt_types_dropdown_list_for_filter());
+        //$view_data['overtime_types_dropdown'] = json_encode($this->_get_ovt_types_dropdown_list_for_filter());
         return $this->template->view("overtime/summary", $view_data);
     }
 
